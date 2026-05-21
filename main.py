@@ -23,30 +23,22 @@ pockets = {
     "Ami":            {"budget": 15000, "spent": 0},
 }
 
-# Last transaction waiting for pocket assignment
 last_transaction = {"amount": 0, "merchant": "", "pending": False}
 
 
 def parse_sms(sms: str):
     amount = 0
     merchant = "Unknown"
-
-    # Extract PKR amount — handles PKR1,161.00 or PKR 1,161.00
     amount_match = re.search(r'PKR\s?([\d,]+\.?\d*)', sms)
     if amount_match:
         amount = float(amount_match.group(1).replace(',', ''))
-
-    # 6222 format: charged at MERCHANT via
     merchant_match = re.search(r'charged at (.+?) via', sms)
     if merchant_match:
         merchant = merchant_match.group(1).strip()
-
-    # 8222 format: sent to MERCHANT from
     if not merchant_match:
         sent_match = re.search(r'sent to (.+?) from', sms)
         if sent_match:
             merchant = sent_match.group(1).strip()
-
     return amount, merchant
 
 
@@ -97,11 +89,33 @@ def pocket_status() -> str:
 
 @app.post("/sms")
 async def receive_sms(request: Request):
-    body = await request.json()
-    sms = body.get("sms", "")
-    print(f"Received SMS: {sms}")
+    # Handle both JSON and form data from Macrodroid
+    sms = ""
+    try:
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            body = await request.json()
+            sms = body.get("sms", "")
+        else:
+            # Try form data or raw body
+            body = await request.body()
+            raw = body.decode("utf-8")
+            print(f"Raw body: {raw}")
+            # Try to extract sms from raw string
+            sms_match = re.search(r'"sms"\s*:\s*"(.+?)"', raw)
+            if sms_match:
+                sms = sms_match.group(1)
+            else:
+                sms = raw
+    except Exception as e:
+        print(f"Parse error: {e}")
+        body = await request.body()
+        sms = body.decode("utf-8")
+
+    print(f"SMS received: {sms}")
 
     amount, merchant = parse_sms(sms)
+    print(f"Amount: {amount}, Merchant: {merchant}")
 
     if amount > 0:
         last_transaction["amount"] = amount
@@ -114,15 +128,19 @@ async def receive_sms(request: Request):
 
 @app.post("/reply")
 async def receive_reply(request: Request):
-    body = await request.json()
+    try:
+        body = await request.json()
+    except:
+        raw = await request.body()
+        body = {"body": raw.decode("utf-8")}
+
+    print(f"Reply received: {body}")
     message = body.get("body", "").strip()
 
-    # Show status anytime
     if message.lower() == "status":
         send_whatsapp(pocket_status())
         return JSONResponse({"status": "ok"})
 
-    # Reset pockets
     if message.lower() == "reset":
         for name in pockets:
             pockets[name]["spent"] = 0
@@ -135,22 +153,18 @@ async def receive_reply(request: Request):
 
     pocket_names = list(pockets.keys())
 
-    # Skip
     if message == "0":
         last_transaction["pending"] = False
         send_whatsapp("✅ Transaction skipped.")
         return JSONResponse({"status": "skipped"})
 
-    # Assign to pocket
     if message in [str(i) for i in range(1, len(pocket_names) + 1)]:
         pocket_name = pocket_names[int(message) - 1]
         amount = last_transaction["amount"]
         pockets[pocket_name]["spent"] += amount
         last_transaction["pending"] = False
-
         remaining = pockets[pocket_name]["budget"] - pockets[pocket_name]["spent"]
         warning = " ⚠️ Running low!" if remaining < pockets[pocket_name]["budget"] * 0.2 else ""
-
         send_whatsapp(
             f"✅ PKR {amount:,.0f} → *{pocket_name}*\n"
             f"PKR {remaining:,.0f} remaining{warning}"
@@ -164,14 +178,6 @@ async def receive_reply(request: Request):
 @app.get("/status")
 async def get_status():
     return JSONResponse(pockets)
-
-
-@app.post("/reset")
-async def reset_pockets():
-    for name in pockets:
-        pockets[name]["spent"] = 0
-    send_whatsapp("🔄 All pockets reset! Salary day activated.")
-    return JSONResponse({"status": "reset"})
 
 
 @app.get("/")
