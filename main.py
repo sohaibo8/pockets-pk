@@ -2,15 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import re
 import requests
+import json
 
 app = FastAPI()
 
-# UltraMsg config
 ULTRAMSG_TOKEN = "mas9ab8b30m7ardd"
 ULTRAMSG_INSTANCE = "instance176624"
 WHATSAPP_NUMBER = "+923335148886"
 
-# 9 Pockets
 pockets = {
     "Groceries":      {"budget": 30000, "spent": 0},
     "Eating out":     {"budget": 20000, "spent": 0},
@@ -89,31 +88,27 @@ def pocket_status() -> str:
 
 @app.post("/sms")
 async def receive_sms(request: Request):
-    # Handle both JSON and form data from Macrodroid
     sms = ""
     try:
-        content_type = request.headers.get("content-type", "")
-        if "application/json" in content_type:
-            body = await request.json()
+        raw = await request.body()
+        raw_str = raw.decode("utf-8")
+        print(f"Raw SMS body: {raw_str}")
+        
+        # Try JSON first
+        try:
+            body = json.loads(raw_str)
             sms = body.get("sms", "")
-        else:
-            # Try form data or raw body
-            body = await request.body()
-            raw = body.decode("utf-8")
-            print(f"Raw body: {raw}")
-            # Try to extract sms from raw string
-            sms_match = re.search(r'"sms"\s*:\s*"(.+?)"', raw)
+        except:
+            # Try extracting sms field from malformed JSON or form data
+            sms_match = re.search(r'"sms"\s*:\s*"(.+?)"(?:,|})', raw_str)
             if sms_match:
                 sms = sms_match.group(1)
             else:
-                sms = raw
+                sms = raw_str
     except Exception as e:
-        print(f"Parse error: {e}")
-        body = await request.body()
-        sms = body.decode("utf-8")
+        print(f"Error: {e}")
 
-    print(f"SMS received: {sms}")
-
+    print(f"SMS: {sms}")
     amount, merchant = parse_sms(sms)
     print(f"Amount: {amount}, Merchant: {merchant}")
 
@@ -128,14 +123,34 @@ async def receive_sms(request: Request):
 
 @app.post("/reply")
 async def receive_reply(request: Request):
+    message = ""
     try:
-        body = await request.json()
-    except:
         raw = await request.body()
-        body = {"body": raw.decode("utf-8")}
+        raw_str = raw.decode("utf-8")
+        print(f"Raw reply body: {raw_str}")
 
-    print(f"Reply received: {body}")
-    message = body.get("body", "").strip()
+        # Try JSON
+        try:
+            body = json.loads(raw_str)
+            # UltraMsg sends message in 'body' field inside 'data' or directly
+            if "data" in body:
+                message = body["data"].get("body", "")
+            else:
+                message = body.get("body", "")
+        except:
+            # Try form data
+            from urllib.parse import parse_qs
+            params = parse_qs(raw_str)
+            if "body" in params:
+                message = params["body"][0]
+            else:
+                message = raw_str
+
+        message = message.strip()
+        print(f"Reply message: {message}")
+
+    except Exception as e:
+        print(f"Reply error: {e}")
 
     if message.lower() == "status":
         send_whatsapp(pocket_status())
