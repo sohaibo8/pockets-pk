@@ -8,7 +8,7 @@ app = FastAPI()
 
 ULTRAMSG_TOKEN = "mas9ab8b30m7ardd"
 ULTRAMSG_INSTANCE = "instance176624"
-WHATSAPP_NUMBER = "+923335148886"
+WHATSAPP_NUMBER = "923335148886"  # without + for comparison
 
 pockets = {
     "Groceries":      {"budget": 30000, "spent": 0},
@@ -45,11 +45,12 @@ def send_whatsapp(message: str):
     url = f"https://api.ultramsg.com/{ULTRAMSG_INSTANCE}/messages/chat"
     payload = {
         "token": ULTRAMSG_TOKEN,
-        "to": WHATSAPP_NUMBER,
+        "to": "+" + WHATSAPP_NUMBER,
         "body": message
     }
     try:
-        requests.post(url, data=payload)
+        r = requests.post(url, data=payload)
+        print(f"WhatsApp sent: {r.status_code} {r.text}")
     except Exception as e:
         print(f"WhatsApp error: {e}")
 
@@ -93,13 +94,10 @@ async def receive_sms(request: Request):
         raw = await request.body()
         raw_str = raw.decode("utf-8")
         print(f"Raw SMS body: {raw_str}")
-        
-        # Try JSON first
         try:
             body = json.loads(raw_str)
             sms = body.get("sms", "")
         except:
-            # Try extracting sms field from malformed JSON or form data
             sms_match = re.search(r'"sms"\s*:\s*"(.+?)"(?:,|})', raw_str)
             if sms_match:
                 sms = sms_match.group(1)
@@ -129,28 +127,35 @@ async def receive_reply(request: Request):
         raw_str = raw.decode("utf-8")
         print(f"Raw reply body: {raw_str}")
 
-        # Try JSON
-        try:
-            body = json.loads(raw_str)
-            # UltraMsg sends message in 'body' field inside 'data' or directly
-            if "data" in body:
-                message = body["data"].get("body", "")
-            else:
-                message = body.get("body", "")
-        except:
-            # Try form data
-            from urllib.parse import parse_qs
-            params = parse_qs(raw_str)
-            if "body" in params:
-                message = params["body"][0]
-            else:
-                message = raw_str
+        body = json.loads(raw_str)
+        data = body.get("data", {})
+        msg_type = data.get("type", "")
+        message = data.get("body", "").strip()
+        from_me = data.get("fromMe", False)
+        sender = data.get("from", "")
 
-        message = message.strip()
-        print(f"Reply message: {message}")
+        print(f"Type: {msg_type}, FromMe: {from_me}, Sender: {sender}, Message: {message}")
+
+        # Only process chat messages from YOUR number
+        # Your number appears as sender when messaging yourself
+        # or as fromMe=true
+        is_your_message = (WHATSAPP_NUMBER in sender) or from_me
+
+        if msg_type != "chat":
+            print("Ignoring — not a chat message")
+            return JSONResponse({"status": "ignored"})
+
+        if not is_your_message:
+            print("Ignoring — not from your number")
+            return JSONResponse({"status": "ignored"})
 
     except Exception as e:
         print(f"Reply error: {e}")
+        return JSONResponse({"status": "error"})
+
+    # Clean message
+    message = message.strip().rstrip(".").strip()
+    print(f"Processing reply: '{message}'")
 
     if message.lower() == "status":
         send_whatsapp(pocket_status())
