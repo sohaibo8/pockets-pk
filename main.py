@@ -176,8 +176,15 @@ async def receive_reply(request: Request):
 
         print(f"Type:{msg_type} | FromMe:{from_me} | Sender:{sender} | Message:{message}")
 
-        # Only process text messages from your number
-        is_yours = ("923335148886" in sender) or from_me
+        self_msg = data.get("self", False)
+        
+        # Ignore messages sent BY the bot (self:true means bot's own outgoing message)
+        if self_msg:
+            print("Ignored — bot's own outgoing message")
+            return JSONResponse({"status": "ignored"})
+
+        # Only process chat messages from your number
+        is_yours = "923335148886" in sender
         if msg_type != "chat" or not is_yours:
             print("Ignored — not your text message")
             return JSONResponse({"status": "ignored"})
