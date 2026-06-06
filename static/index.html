@@ -42,6 +42,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .no-pending{text-align:center;padding:48px 20px;color:var(--text3)}
 .no-pending-icon{font-size:48px;margin-bottom:12px}
 .no-pending-text{font-size:14px}
+.manual-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
+.manual-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace}
+.manual-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:10px;outline:none}
+.manual-input:focus{border-color:var(--green)}
+.manual-input::placeholder{color:var(--text3)}
+.manual-submit{width:100%;background:var(--green);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#000;cursor:pointer;transition:opacity 0.2s}
+.manual-submit:active{opacity:0.8}
 .pocket-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .pocket-num{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);width:18px;flex-shrink:0}
 .pocket-info{flex:1}
@@ -149,12 +156,29 @@ async function loadPending() {
       <div class="pending-label">Assign to pocket</div>
       <div class="pocket-grid">${btns}</div>
       <button class="skip-btn" onclick="skipTx()">Skip this transaction</button>
+    </div>
+    <div class="manual-card">
+      <div class="manual-title">Add manually</div>
+      <input class="manual-input" id="manual-amount" type="number" placeholder="Amount (PKR)" inputmode="numeric">
+      <input class="manual-input" id="manual-merchant" type="text" placeholder="Merchant (optional)">
+      <button class="manual-submit" onclick="addManual()">Add transaction</button>
     </div>`;
   } catch(e){document.getElementById('pending-list').innerHTML='<div class="empty">Could not connect to server</div>';}
 }
 
 async function assignPocket(num) {
   await fetch('/assign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pocket:num})});
+  await loadPockets();
+  await loadPending();
+}
+
+async function addManual() {
+  const amount = document.getElementById('manual-amount').value;
+  const merchant = document.getElementById('manual-merchant').value || 'Manual entry';
+  if(!amount || amount <= 0) { alert('Please enter an amount'); return; }
+  await fetch('/manual', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:parseFloat(amount), merchant:merchant})});
+  document.getElementById('manual-amount').value = '';
+  document.getElementById('manual-merchant').value = '';
   await loadPockets();
   await loadPending();
 }
