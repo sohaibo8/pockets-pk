@@ -87,16 +87,21 @@ async def sw():
 async def receive_sms(request: Request):
     sms = ""
     try:
-        raw = await request.body()
-        raw_str = raw.decode("utf-8").strip()
-        print(f"Raw SMS: {raw_str}")
-        # Try JSON first
-        try:
-            body = json.loads(raw_str)
-            sms = body.get("sms", raw_str)
-        except:
-            # Accept plain text directly
-            sms = raw_str
+        # First check query parameters
+        params = dict(request.query_params)
+        if "sms" in params and params["sms"] and params["sms"] != "{sms_message}":
+            sms = params["sms"]
+            print(f"SMS from query params: {sms}")
+        else:
+            raw = await request.body()
+            raw_str = raw.decode("utf-8").strip()
+            print(f"Raw SMS body: {raw_str}")
+            # Try JSON first
+            try:
+                body = json.loads(raw_str)
+                sms = body.get("sms", raw_str)
+            except:
+                sms = raw_str
     except Exception as e:
         print(f"SMS error: {e}")
 
@@ -199,4 +204,3 @@ async def reset_pockets():
 @app.get("/health")
 async def health():
     return {"status": "ok", "time": datetime.now().isoformat()}
-
