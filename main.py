@@ -55,7 +55,7 @@ def parse_sms(sms: str):
     if merchant_match:
         merchant = merchant_match.group(1).strip()
     if not merchant_match:
-        sent_match = re.search(r'sent to (.+?) from', sms)
+        sent_match = re.search(r'sent to (.+?)(?:\s+from|\s+via)', sms)
         if sent_match:
             merchant = sent_match.group(1).strip()
     return amount, merchant
