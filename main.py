@@ -187,6 +187,16 @@ async def change_assignment(request: Request):
     save_transaction(t)
     return JSONResponse({"status": "ok", "new_pocket": new_pocket})
 
+
+@app.post("/manual")
+async def manual_entry(request: Request):
+    body = await request.json()
+    amount = float(body.get("amount", 0))
+    merchant = body.get("merchant", "Manual entry").strip() or "Manual entry"
+    if amount > 0:
+        save_transaction({"amount": amount, "merchant": merchant, "pending": True, "auto_assigned": None})
+    return JSONResponse({"status": "ok", "amount": amount, "merchant": merchant})
+
 @app.get("/status")
 async def get_status():
     return JSONResponse(load_pockets())
