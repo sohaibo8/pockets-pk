@@ -88,14 +88,15 @@ async def receive_sms(request: Request):
     sms = ""
     try:
         raw = await request.body()
-        raw_str = raw.decode("utf-8")
+        raw_str = raw.decode("utf-8").strip()
         print(f"Raw SMS: {raw_str}")
+        # Try JSON first
         try:
             body = json.loads(raw_str)
-            sms = body.get("sms", "")
+            sms = body.get("sms", raw_str)
         except:
-            match = re.search(r'"sms"\s*:\s*"(.+?)"(?:,|})', raw_str)
-            sms = match.group(1) if match else raw_str
+            # Accept plain text directly
+            sms = raw_str
     except Exception as e:
         print(f"SMS error: {e}")
 
