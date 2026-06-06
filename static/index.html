@@ -1,0 +1,262 @@
+bash
+
+cat /home/claude/pockets-pk/static/index.html
+Output
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pockets">
+<meta name="theme-color" content="#0D0D0F">
+<link rel="manifest" href="/manifest.json">
+<title>Pockets PK</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0D0D0F;--bg2:#111114;--bg3:#18181C;
+  --border:#242428;--border2:#1A1A1E;
+  --text:#E8E8EC;--text2:#8A8A96;--text3:#46464E;
+  --green:#30D158;--amber:#F5A623;--red:#FF453A;--blue:#0A84FF;--purple:#BF5AF2;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(13,13,15,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border2);display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,16px) + 8px) 20px 12px}
+.app-name{font-size:20px;font-weight:600;letter-spacing:-0.3px}
+.app-date{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.pending-badge{background:var(--red);color:#fff;font-size:11px;font-weight:600;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace}
+.pending-badge.hidden{display:none}
+.tabs{display:flex;border-bottom:0.5px solid var(--border2);background:var(--bg);padding:0 20px}
+.tab{flex:1;padding:12px 0;font-size:13px;font-weight:500;color:var(--text3);text-align:center;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.tab.active{color:var(--text);border-bottom-color:var(--green)}
+.content{padding:16px 20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px)}
+.section-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace}
+.pending-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;border-left:3px solid var(--amber)}
+.pending-amount{font-size:28px;font-weight:600;letter-spacing:-0.5px;font-family:'DM Mono',monospace;margin-bottom:2px}
+.pending-merchant{font-size:13px;color:var(--text2);margin-bottom:14px}
+.pending-label{font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.06em}
+.pocket-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pocket-btn{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:3px;width:100%}
+.pocket-btn:active{transform:scale(0.97);background:var(--border)}
+.pocket-btn-name{font-size:12px;font-weight:500;color:var(--text)}
+.pocket-btn-remaining{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.skip-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text3);cursor:pointer;margin-top:10px;transition:all 0.2s}
+.no-pending{text-align:center;padding:48px 20px;color:var(--text3)}
+.no-pending-icon{font-size:48px;margin-bottom:12px}
+.no-pending-text{font-size:14px}
+.pocket-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.pocket-num{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);width:18px;flex-shrink:0}
+.pocket-info{flex:1}
+.pocket-name{font-size:14px;font-weight:500;margin-bottom:6px}
+.pocket-bar-wrap{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.pocket-bar{height:4px;border-radius:2px;transition:width 0.4s}
+.pocket-meta{display:flex;justify-content:space-between}
+.pocket-spent{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.pocket-remaining{font-size:11px;font-family:'DM Mono',monospace}
+.total-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;margin-bottom:14px}
+.total-label{font-size:13px;color:var(--text2)}
+.total-val{font-size:15px;font-weight:600;font-family:'DM Mono',monospace}
+.reset-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:12px;padding:14px;font-size:14px;font-weight:500;color:var(--text3);cursor:pointer;margin-top:16px;transition:all 0.2s}
+.report-filter{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.report-filter::-webkit-scrollbar{display:none}
+.filter-btn{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--text3);white-space:nowrap;cursor:pointer;transition:all 0.2s;flex-shrink:0;font-family:'DM Sans',sans-serif}
+.filter-btn.active{background:var(--green);border-color:var(--green);color:#000;font-weight:600}
+.tx-item{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.tx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tx-info{flex:1}
+.tx-merchant{font-size:13px;font-weight:500}
+.tx-meta{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.tx-amount{font-size:13px;font-weight:500;color:var(--red);font-family:'DM Mono',monospace}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div class="app-name">Pockets PK</div>
+    <div class="app-date" id="today-date"></div>
+  </div>
+  <div class="pending-badge hidden" id="pending-badge">1</div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('pending')">Pending</button>
+  <button class="tab" onclick="switchTab('pockets')">Pockets</button>
+  <button class="tab" onclick="switchTab('report')">Report</button>
+</div>
+<div class="content">
+  <div id="tab-pending">
+    <div class="section-title">Needs assignment</div>
+    <div id="pending-list"><div class="loading">Loading...</div></div>
+  </div>
+  <div id="tab-pockets" style="display:none">
+    <div class="section-title">Budget status</div>
+    <div id="total-wrap"></div>
+    <div id="pockets-list"><div class="loading">Loading...</div></div>
+    <button class="reset-btn" onclick="resetPockets()">↺ Reset all pockets — new month</button>
+  </div>
+  <div id="tab-report" style="display:none">
+    <div class="report-filter" id="report-filters"></div>
+    <div id="report-list"><div class="loading">Loading...</div></div>
+  </div>
+</div>
+<script>
+let allPockets = {};
+let allTransactions = [];
+let activeFilter = 'All';
+
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-PK',{weekday:'long',day:'numeric',month:'long'});
+
+function switchTab(tab) {
+  ['pending','pockets','report'].forEach((t,i) => {
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active',t===tab);
+  });
+  if(tab==='pockets') loadPockets();
+  if(tab==='report') loadReport();
+}
+
+function pkr(n){return 'PKR '+Number(n).toLocaleString('en-PK',{maximumFractionDigits:0});}
+
+function pocketColor(pct){
+  if(pct>=100) return 'var(--red)';
+  if(pct>=70) return 'var(--amber)';
+  return 'var(--green)';
+}
+
+const COLORS=['var(--green)','var(--blue)','var(--amber)','var(--purple)','var(--red)'];
+
+async function loadPending() {
+  try {
+    const res = await fetch('/pending');
+    const t = await res.json();
+    const badge = document.getElementById('pending-badge');
+    const el = document.getElementById('pending-list');
+    if(!t.pending) {
+      badge.classList.add('hidden');
+      el.innerHTML='<div class="no-pending"><div class="no-pending-icon">✅</div><div class="no-pending-text">All caught up</div></div>';
+      return;
+    }
+    badge.classList.remove('hidden');
+    const btns = Object.entries(allPockets).map(([name,data],i)=>{
+      const rem = data.budget - data.spent;
+      return `<button class="pocket-btn" onclick="assignPocket(${i+1})">
+        <div class="pocket-btn-name">${i+1}. ${name}</div>
+        <div class="pocket-btn-remaining">${pkr(rem)} left</div>
+      </button>`;
+    }).join('');
+    el.innerHTML=`<div class="pending-card">
+      <div class="pending-amount">${pkr(t.amount)}</div>
+      <div class="pending-merchant">${t.merchant}</div>
+      <div class="pending-label">Assign to pocket</div>
+      <div class="pocket-grid">${btns}</div>
+      <button class="skip-btn" onclick="skipTx()">Skip this transaction</button>
+    </div>`;
+  } catch(e){document.getElementById('pending-list').innerHTML='<div class="empty">Could not connect to server</div>';}
+}
+
+async function assignPocket(num) {
+  await fetch('/assign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pocket:num})});
+  await loadPockets();
+  await loadPending();
+}
+
+async function skipTx() {
+  await fetch('/skip',{method:'POST'});
+  await loadPending();
+}
+
+async function loadPockets() {
+  try {
+    const res = await fetch('/status');
+    allPockets = await res.json();
+    const totalBudget = Object.values(allPockets).reduce((s,p)=>s+p.budget,0);
+    const totalSpent = Object.values(allPockets).reduce((s,p)=>s+p.spent,0);
+    const rem = totalBudget - totalSpent;
+    document.getElementById('total-wrap').innerHTML=`<div class="total-card">
+      <span class="total-label">Total remaining</span>
+      <span class="total-val" style="color:${rem<0?'var(--red)':'var(--green)'}">${pkr(rem)}</span>
+    </div>`;
+    document.getElementById('pockets-list').innerHTML=Object.entries(allPockets).map(([name,data],i)=>{
+      const pct = data.budget>0?Math.min(100,Math.round(data.spent/data.budget*100)):0;
+      const rem = data.budget - data.spent;
+      const color = pocketColor(pct);
+      const emoji = pct>=100?'🔴':pct>=70?'🟡':'🟢';
+      return `<div class="pocket-card">
+        <div class="pocket-num">${i+1}</div>
+        <div class="pocket-info">
+          <div class="pocket-name">${name}</div>
+          <div class="pocket-bar-wrap"><div class="pocket-bar" style="width:${pct}%;background:${color}"></div></div>
+          <div class="pocket-meta">
+            <span class="pocket-spent">${pkr(data.spent)} spent</span>
+            <span class="pocket-remaining" style="color:${color}">${pkr(rem)} left</span>
+          </div>
+        </div>
+        <div style="font-size:20px">${emoji}</div>
+      </div>`;
+    }).join('');
+  } catch(e){}
+}
+
+async function loadReport() {
+  try {
+    const res = await fetch('/transactions');
+    allTransactions = await res.json();
+    renderFilters();
+    renderReport();
+  } catch(e){}
+}
+
+function renderFilters() {
+  const filters = ['All','This Week','This Month',...Object.keys(allPockets)];
+  document.getElementById('report-filters').innerHTML=filters.map(f=>
+    `<button class="filter-btn ${f===activeFilter?'active':''}" onclick="setFilter('${f}')">${f}</button>`
+  ).join('');
+}
+
+function setFilter(f){activeFilter=f;renderFilters();renderReport();}
+
+function renderReport() {
+  let txs=[...allTransactions].reverse();
+  const now=new Date();
+  if(activeFilter==='This Week'){const w=new Date(now-7*864e5);txs=txs.filter(t=>new Date(t.date)>=w);}
+  else if(activeFilter==='This Month'){txs=txs.filter(t=>{const d=new Date(t.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});}
+  else if(activeFilter!=='All'){txs=txs.filter(t=>t.pocket===activeFilter);}
+  const pocketNames=Object.keys(allPockets);
+  document.getElementById('report-list').innerHTML=txs.length===0
+    ?'<div class="empty">No transactions found</div>'
+    :txs.map(t=>{
+      const ci=pocketNames.indexOf(t.pocket)%COLORS.length;
+      const color=COLORS[ci]||'var(--text3)';
+      const date=new Date(t.date).toLocaleDateString('en-PK',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      return `<div class="tx-item">
+        <div class="tx-dot" style="background:${color}"></div>
+        <div class="tx-info">
+          <div class="tx-merchant">${t.merchant}</div>
+          <div class="tx-meta">${t.pocket} · ${date}</div>
+        </div>
+        <div class="tx-amount">-${pkr(t.amount)}</div>
+      </div>`;
+    }).join('');
+}
+
+async function resetPockets() {
+  if(!confirm('Reset all pockets for new month?')) return;
+  await fetch('/reset',{method:'POST'});
+  await loadPockets();
+  alert('✅ All pockets reset!');
+}
+
+async function init() {
+  await loadPockets();
+  await loadPending();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  setInterval(async()=>{await loadPending();},30000);
+}
+init();
+</script>
+</body>
+</html>
