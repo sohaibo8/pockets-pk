@@ -39,8 +39,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .pocket-btn-name{font-size:12px;font-weight:500;color:var(--text)}
 .pocket-btn-remaining{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 .skip-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text3);cursor:pointer;margin-top:10px;transition:all 0.2s}
-.no-pending{text-align:center;padding:48px 20px;color:var(--text3)}
-.no-pending-icon{font-size:48px;margin-bottom:12px}
+.no-pending{text-align:center;padding:32px 20px;color:var(--text3)}
+.no-pending-icon{font-size:40px;margin-bottom:10px}
 .no-pending-text{font-size:14px}
 .manual-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px}
 .manual-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-family:'DM Mono',monospace}
@@ -90,20 +90,35 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   <button class="tab" onclick="switchTab('report')">Report</button>
 </div>
 <div class="content">
+
+  <!-- PENDING TAB -->
   <div id="tab-pending">
     <div class="section-title">Needs assignment</div>
     <div id="pending-list"><div class="loading">Loading...</div></div>
+
+    <!-- MANUAL ENTRY — always visible -->
+    <div class="manual-card" style="margin-top:20px">
+      <div class="manual-title">Add manually</div>
+      <input class="manual-input" id="manual-amount" type="number" placeholder="Amount (PKR)" inputmode="numeric">
+      <input class="manual-input" id="manual-merchant" type="text" placeholder="Merchant (optional)">
+      <button class="manual-submit" onclick="addManual()">Add transaction</button>
+    </div>
   </div>
+
+  <!-- POCKETS TAB -->
   <div id="tab-pockets" style="display:none">
     <div class="section-title">Budget status</div>
     <div id="total-wrap"></div>
     <div id="pockets-list"><div class="loading">Loading...</div></div>
     <button class="reset-btn" onclick="resetPockets()">↺ Reset all pockets — new month</button>
   </div>
+
+  <!-- REPORT TAB -->
   <div id="tab-report" style="display:none">
     <div class="report-filter" id="report-filters"></div>
     <div id="report-list"><div class="loading">Loading...</div></div>
   </div>
+
 </div>
 <script>
 let allPockets = {};
@@ -122,13 +137,7 @@ function switchTab(tab) {
 }
 
 function pkr(n){return 'PKR '+Number(n).toLocaleString('en-PK',{maximumFractionDigits:0});}
-
-function pocketColor(pct){
-  if(pct>=100) return 'var(--red)';
-  if(pct>=70) return 'var(--amber)';
-  return 'var(--green)';
-}
-
+function pocketColor(pct){if(pct>=100)return 'var(--red)';if(pct>=70)return 'var(--amber)';return 'var(--green)';}
 const COLORS=['var(--green)','var(--blue)','var(--amber)','var(--purple)','var(--red)'];
 
 async function loadPending() {
@@ -156,12 +165,6 @@ async function loadPending() {
       <div class="pending-label">Assign to pocket</div>
       <div class="pocket-grid">${btns}</div>
       <button class="skip-btn" onclick="skipTx()">Skip this transaction</button>
-    </div>
-    <div class="manual-card">
-      <div class="manual-title">Add manually</div>
-      <input class="manual-input" id="manual-amount" type="number" placeholder="Amount (PKR)" inputmode="numeric">
-      <input class="manual-input" id="manual-merchant" type="text" placeholder="Merchant (optional)">
-      <button class="manual-submit" onclick="addManual()">Add transaction</button>
     </div>`;
   } catch(e){document.getElementById('pending-list').innerHTML='<div class="empty">Could not connect to server</div>';}
 }
@@ -175,10 +178,10 @@ async function assignPocket(num) {
 async function addManual() {
   const amount = document.getElementById('manual-amount').value;
   const merchant = document.getElementById('manual-merchant').value || 'Manual entry';
-  if(!amount || amount <= 0) { alert('Please enter an amount'); return; }
-  await fetch('/manual', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:parseFloat(amount), merchant:merchant})});
-  document.getElementById('manual-amount').value = '';
-  document.getElementById('manual-merchant').value = '';
+  if(!amount || amount <= 0){alert('Please enter an amount');return;}
+  await fetch('/manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:parseFloat(amount),merchant:merchant})});
+  document.getElementById('manual-amount').value='';
+  document.getElementById('manual-merchant').value='';
   await loadPockets();
   await loadPending();
 }
@@ -200,10 +203,10 @@ async function loadPockets() {
       <span class="total-val" style="color:${rem<0?'var(--red)':'var(--green)'}">${pkr(rem)}</span>
     </div>`;
     document.getElementById('pockets-list').innerHTML=Object.entries(allPockets).map(([name,data],i)=>{
-      const pct = data.budget>0?Math.min(100,Math.round(data.spent/data.budget*100)):0;
-      const rem = data.budget - data.spent;
-      const color = pocketColor(pct);
-      const emoji = pct>=100?'🔴':pct>=70?'🟡':'🟢';
+      const pct=data.budget>0?Math.min(100,Math.round(data.spent/data.budget*100)):0;
+      const rem=data.budget-data.spent;
+      const color=pocketColor(pct);
+      const emoji=pct>=100?'🔴':pct>=70?'🟡':'🟢';
       return `<div class="pocket-card">
         <div class="pocket-num">${i+1}</div>
         <div class="pocket-info">
@@ -230,7 +233,7 @@ async function loadReport() {
 }
 
 function renderFilters() {
-  const filters = ['All','This Week','This Month',...Object.keys(allPockets)];
+  const filters=['All','This Week','This Month',...Object.keys(allPockets)];
   document.getElementById('report-filters').innerHTML=filters.map(f=>
     `<button class="filter-btn ${f===activeFilter?'active':''}" onclick="setFilter('${f}')">${f}</button>`
   ).join('');
